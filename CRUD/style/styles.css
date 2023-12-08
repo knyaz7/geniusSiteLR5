@@ -1,0 +1,57 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+h2 {
+    background-color: #3498db;
+    padding: 10px;
+    text-align: center;
+    color: #fff;
+}   
+
+table {
+    width: 80%;
+    margin: 20px auto;
+    border-collapse: collapse;
+}
+
+table, th, td {
+    border: 1px solid #ccc;
+}
+
+th, td {
+    padding: 10px;
+}
+
+th {
+    background-color: #3498db;
+    color: #fff;
+}
+
+.success {
+    color: green;
+}
+
+.error {
+    color: red;
+}
+
+form {
+    text-align: center;
+}
+
+.btn {
+    display: inline-block;
+    background-color: #ff0000;
+    color: #fff;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: .1s linear;
+}
+
+.btn:hover {
+    background-color: #cc0000;
+}
