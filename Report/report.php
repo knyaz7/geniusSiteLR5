@@ -1,4 +1,5 @@
 <?php
+include "db/DBManager.php";
 session_start();
 
 if (!isset($_SESSION['user'])) {
@@ -16,12 +17,8 @@ if (isset($_POST['year'])) {
     $selectedYearDisplay = htmlspecialchars($selectedYear);
 
     // Подключение к базе данных
-    $servername = "localhost";
-    $username = "root";
-    $password = "";
-    $dbname = "furniture";
-
-    $conn = new mysqli($servername, $username, $password, $dbname);
+    $dbManager = new DBManager();
+    $conn = $dbManager->dbConnect();
 
     if ($conn->connect_error) {
         die("Ошибка подключения: " . $conn->connect_error);

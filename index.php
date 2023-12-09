@@ -73,7 +73,7 @@
 </head>
 <body>
     <?php
-    include "db/connect.php";
+    include "db/DBManager.php";
     session_start();
 
     if (isset($_SESSION['user'])) {
@@ -83,13 +83,8 @@
     }
 
     // Подключение к базе данных 
-    $dbParams = dbConnect();
-    $conn = new mysqli(
-        $dbParams['servername'],
-        $dbParams['username'],
-        $dbParams['password'],
-        $dbParams['database']
-    );
+    $dbManager = new DBManager();
+    $conn = $dbManager->dbConnect();
 
     if ($conn->connect_error) {
         die("Ошибка подключения к базе данных: " . $conn->connect_error);
