@@ -1,5 +1,7 @@
 <?php
-class User
+include "AUser.php";
+
+class User extends AUser
 {
     protected $password, $email;
 
@@ -38,7 +40,7 @@ class User
         $this->email = $email;
     }
 
-    public function showAttr()
+    public function showInfo()
     {
         return "E-mail: {$this->email}\nПароль: {$this->password}";
     }
