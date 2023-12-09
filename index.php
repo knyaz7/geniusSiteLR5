@@ -123,5 +123,19 @@
     <p>Использовать строго в корпоративных целях!</p>
     <a class="btn" href="register.php">Зарегистрироваться</a>
     <a class="btn" href="login.php">Войти</a>
+    <?php
+        include "SuperUser.php";
+        try {
+            $user = new User('marina@mail.ru', 'lol');
+            $user2 = clone $user;
+            $superUser = new SuperUser('admin');
+            echo '<p>' . $user->showInfo() . '</p>';
+            echo '<p>' . print_r($superUser) . '</p>';
+
+            $user = new User();
+        } catch (Exception $e) {
+            echo '<p>' . $e->getMessage() . '</p>';
+        }
+    ?>
 </body>
 </html>
