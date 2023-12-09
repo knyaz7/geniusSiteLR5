@@ -1,11 +1,10 @@
 <?php
 class User
 {
-    protected $login, $password, $email;
+    protected $password, $email;
 
     public function __construct($login, $password, $email)
     {
-        $this->login = $login;
         $this->password = $password;
         $this->email = $email;
     }
@@ -25,11 +24,6 @@ class User
         return $this->email;
     }
 
-    public function setLogin($login)
-    {
-        $this->login = $login;
-    }
-
     public function setPassword($password)
     {
         $this->password = $password;
@@ -42,6 +36,6 @@ class User
 
     public function showAttr()
     {
-        return "Логин: {$this->login}\nПароль: {$this->password}\nE-mail: {$this->email}";
+        return "E-mail: {$this->email}\nПароль: {$this->password}";
     }
 }
