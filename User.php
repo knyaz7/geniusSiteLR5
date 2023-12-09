@@ -3,10 +3,10 @@ class User
 {
     protected $password, $email;
 
-    public function __construct($password = '', $email = '')
+    public function __construct($email = '', $password = '')
     {
-        $this->password = $password;
         $this->email = $email;
+        $this->password = $password;
     }
 
     public function __clone()
