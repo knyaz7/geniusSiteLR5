@@ -9,9 +9,10 @@ class User
         $this->email = $email;
     }
 
-    public function getLogin()
+    public function __clone()
     {
-        return $this->login;
+        $this->email = "Guest";
+        $this->password = "qwerty";
     }
 
     public function getPasswrord()
