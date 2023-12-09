@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $password = $_POST['password'];
         
         // Проверка reCAPTCHA https://www.google.com/recaptcha/admin/site/686721336/setup
-        $recaptchaSecretKey = "6Lc4ie4oAAAAAPpSWRGV6IJRV8JCk4_Cu1Zb5-BE"; 
+        $recaptchaSecretKey = "6LdkuCspAAAAALOghDiJLE3-iwcEwpK2FuKItVGx"; 
         $recaptchaResponse = $_POST['g-recaptcha-response'];
         $recaptchaUrl = "https://www.google.com/recaptcha/api/siteverify?secret=$recaptchaSecretKey&response=$recaptchaResponse";
         $recaptchaData = json_decode(file_get_contents($recaptchaUrl));
@@ -160,7 +160,7 @@ $conn->close();
         <label for="remember_me">Запомнить меня:</label>
         <input type="checkbox" name="remember_me" id="remember_me">
         <br>
-        <div class="g-recaptcha" data-sitekey="6Lc4ie4oAAAAAOPEqod_d_HSgwHFao47QrcCV2eW"></div>
+        <div class="g-recaptcha" data-sitekey="6LdkuCspAAAAAB0Y-5UOhsMoT2auGQsLRPVjFT8c"></div>
         <br/>
         <input type="submit" value="Войти">
     </form>
