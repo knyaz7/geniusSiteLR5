@@ -5,9 +5,12 @@ class User
 
     public function __construct($email = '', $password = '')
     {
+        if (!($email && $password)) {
+            throw new Exception("Ну как там с данными?", 423);
+        }
         $this->email = $email;
         $this->password = $password;
-    }
+    }   
 
     public function __clone()
     {
