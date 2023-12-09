@@ -1,9 +1,13 @@
 <?php
+include "db/connect.php";
 // Подключение к базе данных 
-$servername = "localhost";
-$username = "root";
-$password = "";
-$database = "furniture";
+$dbParams = dbConnect();
+$conn = new mysqli(
+    $dbParams['servername'],
+    $dbParams['username'],
+    $dbParams['password'],
+    $dbParams['database']
+);
 
 $conn = new mysqli($servername, $username, $password, $database);
 
