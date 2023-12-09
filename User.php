@@ -3,7 +3,7 @@ class User
 {
     protected $password, $email;
 
-    public function __construct($login, $password, $email)
+    public function __construct($password, $email)
     {
         $this->password = $password;
         $this->email = $email;
