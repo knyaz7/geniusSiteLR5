@@ -16,7 +16,14 @@ class DBManager
             die("Ошибка подключения к базе данных: " . $this->connection->connect_error);
         }
     }
-
+    /**
+     * Пример вызова
+     * select(
+     *       ['id', 'email', 'password', 'accessright'],
+     *       'users',
+     *       ['email' => $email]
+     * )
+     */
     public function select(array $selectedFields, string $table, array $filterConditions)
     {
         $selectedFields = substr(
@@ -42,6 +49,17 @@ class DBManager
         // return $query->get_result();
     }
 
+    /**
+     * Пример вызова
+     * update(
+     *       'users',
+     *       [
+     *          'code' => 5,
+     *          'email' => 'lol@ya.ru'
+     *       ],
+     *       ['id' => 4]
+     * )
+     */
     public function update(string $table, array $updatingFields, array $filterConditions)
     {
         $updatingFields = substr(
@@ -72,6 +90,14 @@ class DBManager
         return $this->connection->query($query);
     }
 
+    /**
+     * Пример вызова
+     * insert(
+     *       'users',
+     *       ['email', 'password', 'name'],
+     *       ['lol@ya.ru', 1234, 'Борис']
+     * )
+     */
     public function insert(string $table, array $insertingFields, array $values)
     {
         $insertingFields = substr(
