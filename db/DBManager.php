@@ -29,11 +29,9 @@ class DBManager
      *       ['email' => $email]
      * )
      */
-    public function select(array $selectedFields, string $table, array $filterConditions)
+    public function select(array $selectedFields, string $table, array $filterConditions, string $joinTable = '')
     {
-        $selectedFields = substr(
-            implode(', ', $selectedFields), 0, -2
-        );
+        $selectedFields = implode(', ', $selectedFields);
         $filterConditions = substr(
             implode(
                 array_map(
@@ -46,8 +44,11 @@ class DBManager
             ),
             0, -5
         );
-        $query = "SELECT {$selectedFields} FROM {$table} WHERE {$filterConditions}";
-        return $this->connection->query($query);
+        $test = substr($joinTable, 0, -1);
+        $joinString = $joinTable ? "JOIN {$joinTable} ON {$table}.{$test}_id = {$joinTable}.id " : '';
+        $query = "SELECT {$selectedFields} FROM {$table} {$joinString}WHERE {$filterConditions}";
+        $lol = 0;
+        // return $this->connection->query($query);
         // $query = $this->connection->prepare($queryString);
         // $query->bind_param($this->determinateTypes(array_values($filterConditions)), $filterConditions);
         // $query->execute();
@@ -105,12 +106,8 @@ class DBManager
      */
     public function insert(string $table, array $insertingFields, array $values)
     {
-        $insertingFields = substr(
-            implode(', ', $insertingFields), 0, -2
-        );
-        $values = substr(
-            implode(', ', $values), 0, -5
-        );
+        $insertingFields = implode(', ', $insertingFields);
+        $values = implode(', ', $values);
         $query = "INSERT INTO {$table} ({$insertingFields}) VALUES ({$values})";
         return $this->connection->query($query);
     }
