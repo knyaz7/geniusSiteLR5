@@ -1,12 +1,20 @@
 <?php
-
 class DBManager
 {
-    protected $env;
+    protected $connection;
 
-    public function __construct()
+    public function __construct($dbParams)
     {
-        $this->env = parse_ini_file('.env');
+        $this->connection = new mysqli(
+            $dbParams['servername'],
+            $dbParams['username'],
+            $dbParams['password'],
+            $dbParams['database']
+        );
+
+        if ($this->connection->connect_error) {
+            die("Ошибка подключения к базе данных: " . $this->connection->connect_error);
+        }
     }
 
     public function dbConnect()
