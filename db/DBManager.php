@@ -17,15 +17,29 @@ class DBManager
         }
     }
 
-    public function dbConnect()
+    public function select(array $selectedFields, string $table, array $filterConditions)
     {
-        $params = $this->getConnParam();
-        return new mysqli(
-            $params['servername'],
-            $params['username'],
-            $params['password'],
-            $params['database']
+        $selectedFields = substr(
+            implode(', ', $selectedFields), 0, -2
         );
+        $filterConditions = substr(
+            implode(
+                array_map(
+                    function($key, $value){
+                        return $key . '=' . $value . ' AND ';
+                    },
+                    array_keys($filterConditions),
+                    $filterConditions
+                )
+            ),
+            0, -5
+        );
+        $query = "SELECT {$selectedFields} FROM {$table} WHERE {$filterConditions}";
+        return $this->connection->query($query);
+        // $query = $this->connection->prepare($queryString);
+        // $query->bind_param($this->determinateTypes(array_values($filterConditions)), $filterConditions);
+        // $query->execute();
+        // return $query->get_result();
     }
 
     protected function getConnParam()
