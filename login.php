@@ -3,12 +3,8 @@ include "db/DBManager.php";
 include "ConfigManager.php";
 // Подключение к базе данных 
 $configManager = new ConfigManager();
-$conn = new DBManager($configManager->getDBParam());
+$dbManager = new DBManager($configManager->getDBParam());
 
-
-if ($conn->connect_error) {
-    die("Ошибка подключения к базе данных: " . $conn->connect_error);
-}
 
 // Обработка данных авторизации
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -28,11 +24,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($recaptchaData->success) {
 
             // Проверяем, существует ли уже такой email в базе данных
-            $checkEmailQuery = "SELECT id, email, password, accessright FROM users WHERE email = ?";
-            $checkEmailStmt = $conn->prepare($checkEmailQuery);
-            $checkEmailStmt->bind_param("s", $email);
-            $checkEmailStmt->execute();
-            $checkEmailResult = $checkEmailStmt->get_result();
+
+            
+            // $checkEmailQuery = "SELECT id, email, password, accessright FROM users WHERE email = ?";
+            // $checkEmailStmt = $dbManager->prepare($checkEmailQuery);
+            // $checkEmailStmt->bind_param("s", $email);
+            // $checkEmailStmt->execute();
+
+            $checkEmailResult = $dbManager->select(
+                ['id', 'email', 'password', 'accessright'],
+                'users',
+                ['email' => $email]
+            );
+            echo $checkEmailResult;
 
             if ($checkEmailResult->num_rows > 0) {
                 $row = $checkEmailResult->fetch_assoc();
@@ -61,14 +65,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 echo "Пользователь с таким email не найден.";
             }
 
-            $checkEmailStmt->close();
+            // $checkEmailStmt->close();
         } else {
             echo "Пожалуйста, подтвердите, что вы не робот.";
         }
     } 
 }
 
-$conn->closeConnection();
+$dbManager->closeConnection();
 ?>
 
 <!DOCTYPE html>
