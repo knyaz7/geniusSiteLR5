@@ -74,6 +74,7 @@
 <body>
     <?php
     include "db/DBManager.php";
+    include "ConfigManager.php";
     session_start();
 
     if (isset($_SESSION['user'])) {
@@ -83,23 +84,28 @@
     }
 
     // Подключение к базе данных 
-    $dbManager = new DBManager();
-    $conn = $dbManager->dbConnect();
-
-    if ($conn->connect_error) {
-        die("Ошибка подключения к базе данных: " . $conn->connect_error);
-    }
-
+    $configManager = new ConfigManager();
+    $dbManager = new DBManager($configManager->getDBParam());
+    
     if (isset($_COOKIE['user_email']) && isset($_COOKIE['user_password'])) {
         $email = $_COOKIE['user_email'];
         $password = $_COOKIE['user_password'];
     
         // Проверяем, существует ли уже такой email в базе данных
-        $checkEmailQuery = "SELECT id, email, password, accessright FROM users WHERE email = ?";
-        $checkEmailStmt = $conn->prepare($checkEmailQuery);
-        $checkEmailStmt->bind_param("s", $email);
-        $checkEmailStmt->execute();
-        $checkEmailResult = $checkEmailStmt->get_result();
+        $dbManager->select(
+            ['id', 'email', 'password', 'accessright'],
+            'users',
+            [
+                'email' => $email,
+                'lol'=>5,
+                'props'=>'nada'
+            ]
+        );
+        // $checkEmailQuery = "SELECT id, email, password, accessright FROM users WHERE email = ?";
+        // $checkEmailStmt = $conn->prepare($checkEmailQuery);
+        // $checkEmailStmt->bind_param("s", $email);
+        // $checkEmailStmt->execute();
+        // $checkEmailResult = $checkEmailStmt->get_result();
     
         if ($checkEmailResult->num_rows > 0) {
             $row = $checkEmailResult->fetch_assoc();
@@ -123,7 +129,7 @@
     <p>Использовать строго в корпоративных целях!</p>
     <a class="btn" href="register.php">Зарегистрироваться</a>
     <a class="btn" href="login.php">Войти</a>
-    <?php
+    <!-- <?php
         include "SuperUser.php";
         try {
             $user = new User('marina@mail.ru', 'lol');
@@ -136,6 +142,6 @@
         } catch (Exception $e) {
             echo '<p>' . $e->getMessage() . '</p>';
         }
-    ?>
+    ?> -->
 </body>
 </html>
