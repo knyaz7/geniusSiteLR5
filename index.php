@@ -96,9 +96,7 @@
             ['id', 'email', 'password', 'accessright'],
             'users',
             [
-                'email' => $email,
-                'lol'=>5,
-                'props'=>'nada'
+                'email' => $email
             ]
         );
         // $checkEmailQuery = "SELECT id, email, password, accessright FROM users WHERE email = ?";
