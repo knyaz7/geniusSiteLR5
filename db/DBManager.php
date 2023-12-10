@@ -26,9 +26,7 @@ class DBManager
      */
     public function select(array $selectedFields, string $table, array $filterConditions, string $joinTable = '')
     {
-        $selectedFields = substr(
-            implode(', ', $selectedFields), 0, -2
-        );
+        $selectedFields = implode(', ', $selectedFields);
         $filterConditions = substr(
             implode(
                 array_map(
@@ -103,12 +101,8 @@ class DBManager
      */
     public function insert(string $table, array $insertingFields, array $values)
     {
-        $insertingFields = substr(
-            implode(', ', $insertingFields), 0, -2
-        );
-        $values = substr(
-            implode(', ', $values), 0, -5
-        );
+        $insertingFields = implode(', ', $insertingFields);
+        $values = implode(', ', $values);
         $query = "INSERT INTO {$table} ({$insertingFields}) VALUES ({$values})";
         return $this->connection->query($query);
     }
