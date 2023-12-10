@@ -72,9 +72,16 @@ class DBManager
         return $this->connection->query($query);
     }
 
-    public function insert()
+    public function insert(string $table, array $insertingFields, array $values)
     {
-        
+        $insertingFields = substr(
+            implode(', ', $insertingFields), 0, -2
+        );
+        $values = substr(
+            implode(', ', $values), 0, -5
+        );
+        $query = "INSERT INTO {$table} ({$insertingFields}) VALUES ({$values})";
+        return $this->connection->query($query);
     }
 
     // protected function determinateTypes($fileds)
