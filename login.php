@@ -36,7 +36,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'users',
                 ['email' => $email]
             );
-            echo $checkEmailResult;
 
             if ($checkEmailResult->num_rows > 0) {
                 $row = $checkEmailResult->fetch_assoc();

@@ -36,7 +36,7 @@ class DBManager
             implode(
                 array_map(
                     function($key, $value){
-                        return $key . '=' . $value . ' AND ';
+                        return $key . "='" . $value . "' AND ";
                     },
                     array_keys($filterConditions),
                     $filterConditions
@@ -46,9 +46,9 @@ class DBManager
         );
         $test = substr($joinTable, 0, -1);
         $joinString = $joinTable ? "JOIN {$joinTable} ON {$table}.{$test}_id = {$joinTable}.id " : '';
-        $query = "SELECT {$selectedFields} FROM {$table} {$joinString}WHERE {$filterConditions}";
-        $lol = 0;
-        // return $this->connection->query($query);
+        $sql = "SELECT {$selectedFields} FROM {$table} {$joinString}WHERE {$filterConditions}";
+        $result = $this->connection->query($sql);
+        return $result;
         // $query = $this->connection->prepare($queryString);
         // $query->bind_param($this->determinateTypes(array_values($filterConditions)), $filterConditions);
         // $query->execute();
