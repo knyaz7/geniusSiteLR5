@@ -17,6 +17,10 @@ class DBManager
         }
     }
 
+    public function closeConnection() {
+        $this->connection->close();
+    }
+
     public function select(array $selectedFields, string $table, array $filterConditions)
     {
         $selectedFields = substr(

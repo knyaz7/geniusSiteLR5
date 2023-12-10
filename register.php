@@ -1,8 +1,9 @@
 <?php
 include "db/DBManager.php";
+include "ConfigManager.php";
 // Подключение к базе данных 
-$dbManager = new DBManager();
-$conn = $dbManager->dbConnect();
+$configManager = new ConfigManager();
+$conn = new DBManager($configManager->getDBParam());
 
 if ($conn->connect_error) {
     die("Ошибка подключения к базе данных: " . $conn->connect_error);
@@ -54,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $checkEmailStmt->close();
 }
 
-$conn->close();
+$conn->closeConnection();
 ?>
 
 <!DOCTYPE html>
