@@ -24,7 +24,7 @@ class DBManager
      *       ['email' => $email]
      * )
      */
-    public function select(array $selectedFields, string $table, array $filterConditions)
+    public function select(array $selectedFields, string $table, array $filterConditions, string $joinTable = '')
     {
         $selectedFields = substr(
             implode(', ', $selectedFields), 0, -2
@@ -41,8 +41,11 @@ class DBManager
             ),
             0, -5
         );
-        $query = "SELECT {$selectedFields} FROM {$table} WHERE {$filterConditions}";
-        return $this->connection->query($query);
+        $test = substr($joinTable, 0, -1);
+        $joinString = $joinTable ? "JOIN {$joinTable} ON {$table}.{$test}_id = {$joinTable}.id " : '';
+        $query = "SELECT {$selectedFields} FROM {$table} {$joinString}WHERE {$filterConditions}";
+        $lol = 0;
+        // return $this->connection->query($query);
         // $query = $this->connection->prepare($queryString);
         // $query->bind_param($this->determinateTypes(array_values($filterConditions)), $filterConditions);
         // $query->execute();
