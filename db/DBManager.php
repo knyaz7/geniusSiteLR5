@@ -42,14 +42,22 @@ class DBManager
         // return $query->get_result();
     }
 
-    protected function getConnParam()
+    public function update()
     {
-        return [
-            'servername' => $this->env['DB_HOST'],
-            'username' => $this->env['DB_USERNAME'],
-            'password' => $this->env['DB_PASSWORD'],
-            'database' => $this->env['DB_DATABASE'],
-        ];
-    }
-}
 
+    }
+
+    public function insert()
+    {
+        
+    }
+
+    // protected function determinateTypes($fileds)
+    // {
+    //     $arrTypes = '';
+    //     foreach ($fileds as $field) {
+    //         $arrTypes .= gettype($field)[0];
+    //     }
+    //     return $arrTypes;
+    // }
+}
