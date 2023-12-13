@@ -24,13 +24,15 @@ class DBManager
     /**
      * Пример вызова
      * select(
-     *       ['id', 'email', 'password', 'accessright'],
-     *       'users',
-     *       ['email' => $email]
+     *       ['u.id', 'u.email', 'u.password', 'fm.model', 'c.order'],
+     *       'users u',
+     *       ['u.email' => $email],
+     *       ['customers' => 'c', 'fig_models' => 'fm']
      * )
      */
     public function select(array $selectedFields, string $table, array $filterConditions, array $joinTables = [])
     {
+        [$table, $aliasTable] = explode(' ', $table);
         $selectedFields = implode(', ', $selectedFields);
         $filterConditions = substr(
             implode(
@@ -46,14 +48,15 @@ class DBManager
         );
         $joinString = implode(
             array_map(
-                function($table){
-                    $column = substr($table, 0, -1);
-                    return "JOIN {$table} ON {$table}.{$column}_id = {$table}.id ";
+                function($joinTable, $alias) use($aliasTable){
+                    $column = substr($joinTable, 0, -1);
+                    return "JOIN {$joinTable} {$alias} ON {$aliasTable}.{$column}_id = {$alias}.id ";
                 },
+                array_keys($joinTables),
                 $joinTables
             )
         );
-        $sql = "SELECT {$selectedFields} FROM {$table} {$joinString}WHERE {$filterConditions}";
+        $sql = "SELECT {$selectedFields} FROM {$table} {$aliasTable} {$joinString}WHERE {$filterConditions}";
         $result = $this->connection->query($sql);
         return $result;
         // $query = $this->connection->prepare($queryString);
