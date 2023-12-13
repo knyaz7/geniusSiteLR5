@@ -132,7 +132,7 @@ if (isset($_POST['logout'])) {
     </form>
     </div>
     <h1>Управление базой данных</h1>
-    <a class="btn" href="CRUD/furniture_model.php">Управление таблицей furniture_model</a>
+    <a class="btn" href="CRUD/furniture_models.php">Управление таблицей furniture_models</a>
     <a class="btn" href="CRUD/customers.php">Управление таблицей customers</a>
     <a class="btn" href="CRUD/contracts.php">Управление таблицей contracts</a>
     <a class="btn" href="CRUD/sales.php">Управление таблицей sales</a>

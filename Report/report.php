@@ -1,6 +1,6 @@
 <?php
-include "db/DBManager.php";
-include "ConfigManager.php";
+include "../db/DBManager.php";
+include "../ConfigManager.php";
 session_start();
 
 if (!isset($_SESSION['user'])) {
@@ -22,18 +22,27 @@ if (isset($_POST['year'])) {
     $dbManager = new DBManager($configManager->getDBParam());
 
     // SQL-запрос для получения данных
-    $sql = "SELECT fm.furniture_name, fm.model_name, s.quantity, fm.model_price,
-        (s.quantity * fm.model_price) as model_cost, c.id as contract_id, c.customer_id
-        FROM sales s
-        INNER JOIN contracts c ON s.contract_id = c.id
-        INNER JOIN furniture_model fm ON s.furniture_model_id = fm.id
-        INNER JOIN customers cu ON c.customer_id = cu.id
-        WHERE YEAR(c.contract_date) = $selectedYear AND s.is_deleted = false";
+    // $sql = "SELECT fm.furniture_name, fm.model_name, s.quantity, fm.model_price,
+    //     (s.quantity * fm.model_price) as model_cost, c.id as contract_id, c.customer_id
+    //     FROM sales s
+    //     INNER JOIN contracts c ON s.contract_id = c.id
+    //     INNER JOIN furniture_model fm ON s.furniture_model_id = fm.id
+    //     INNER JOIN customers cu ON c.customer_id = cu.id
+    //     WHERE YEAR(c.contract_date) = $selectedYear AND s.is_deleted = false";
 
-    $result = $conn->query($sql);
+    // $result = $conn->query($sql);
+    $result = $dbManager->select(
+        ['fm.furniture_name', 'fm.model_name', 's.quantity', 'fm.model_price',
+            '(s.quantity * fm.model_price) as model_cost', 'c.id as contract_id', 'c.customer_id'],
+        'sales s',
+        ['YEAR(c.contract_date)' => $selectedYear, 's.is_deleted' => false],
+        [
+            ['contracts', 'c'], ['furniture_models', 'fm'], ['customers', 'cu', 'c']
+        ]
+    );
 
     if ($result === false) {
-        echo "Ошибка выполнения SQL-запроса: " . $conn->error;
+        echo "Ошибка выполнения SQL-запроса";
     } else {
         // Формирование отчета
         echo "<h2>Отчет о выполнении договоров на продажу мебели за $selectedYearDisplay год</h2>";
@@ -127,7 +136,7 @@ if (isset($_POST['year'])) {
         echo "</table>";
     }
 
-    $conn->close();
+    $dbManager->closeConnection();
 } else {
     echo "Пожалуйста, выберите год для генерации отчета.";
 }

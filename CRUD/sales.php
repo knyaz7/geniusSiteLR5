@@ -47,7 +47,7 @@ function getContractDates($selectedId = null) {
 // Функция для получения модели мебели
 function getFurnitureModels($selectedId = null) {
     global $conn;
-    $sql = "SELECT id, model_name FROM furniture_model WHERE is_deleted = false";
+    $sql = "SELECT id, model_name FROM furniture_models WHERE is_deleted = false";
     $result = $conn->query($sql);
 
     if ($result->num_rows > 0) {
@@ -111,10 +111,10 @@ if (isset($_POST['update'])) {
 }
 
 // READ - Вывод данных из таблицы 
-$sql = "SELECT sales.id, contracts.contract_date, furniture_model.model_name, quantity
+$sql = "SELECT sales.id, contracts.contract_date, furniture_models.model_name, quantity
         FROM sales
         JOIN contracts ON sales.contract_id = contracts.id
-        JOIN furniture_model ON sales.furniture_model_id = furniture_model.id
+        JOIN furniture_models ON sales.furniture_model_id = furniture_models.id
         WHERE sales.is_deleted = false";
 
 $result = $conn->query($sql);

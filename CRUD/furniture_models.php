@@ -37,7 +37,7 @@ if (isset($_POST['create'])) {
     $model_characteristics = $_POST['model_characteristics'];
     $model_price = $_POST['model_price'];
 
-    $sql = "INSERT INTO furniture_model (furniture_name, model_name, model_characteristics, model_price) VALUES (?, ?, ?, ?)";
+    $sql = "INSERT INTO furniture_models (furniture_name, model_name, model_characteristics, model_price) VALUES (?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("sssi", $furniture_name, $model_name, $model_characteristics, $model_price);
 
@@ -51,7 +51,7 @@ if (isset($_POST['create'])) {
 // DELETE - Логическое удаление записи
 if (isset($_GET['delete'])) {
     $id = $_GET['delete'];
-    $sql = "UPDATE furniture_model SET is_deleted = true WHERE id = ?";
+    $sql = "UPDATE furniture_models SET is_deleted = true WHERE id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $id);
 
@@ -72,7 +72,7 @@ if (isset($_POST['update'])) {
     $model_characteristics = $_POST['model_characteristics'];
     $model_price = $_POST['model_price'];
 
-    $sql = "UPDATE furniture_model SET furniture_name = ?, model_name = ?, model_characteristics = ?, model_price = ?, is_deleted = ? WHERE id = ?";
+    $sql = "UPDATE furniture_models SET furniture_name = ?, model_name = ?, model_characteristics = ?, model_price = ?, is_deleted = ? WHERE id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("sssiii", $furniture_name, $model_name, $model_characteristics, $model_price, $is_deleted, $id);
 
@@ -85,7 +85,7 @@ if (isset($_POST['update'])) {
 }
 
 // READ - Вывод данных из таблицы 
-$sql = "SELECT * FROM furniture_model WHERE is_deleted = false";
+$sql = "SELECT * FROM furniture_models WHERE is_deleted = false";
 $result = $conn->query($sql);
 
 if ($result->num_rows > 0) {
@@ -118,7 +118,7 @@ echo '</form>';
 
 if (isset($_GET['edit'])) {
     $id = $_GET['edit'];
-    $sql = "SELECT * FROM furniture_model WHERE id = ?";
+    $sql = "SELECT * FROM furniture_models WHERE id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $id);
     $stmt->execute();
@@ -148,7 +148,7 @@ $conn->close();
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Управление таблицей furniture_model</title>
+    <title>Управление таблицей furniture_models</title>
     <link rel="stylesheet" href="style/styles.css">
 </head>
 <body>
