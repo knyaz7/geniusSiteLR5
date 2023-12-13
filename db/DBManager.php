@@ -27,7 +27,10 @@ class DBManager
      *       ['u.id', 'u.email', 'u.password', 'fm.model', 'c.order'],
      *       'users u',
      *       ['u.email' => $email],
-     *       ['customers' => 'c', 'fig_models' => 'fm']
+     *       [
+     *          ['customers', 'c'],
+     *          ['fig_models', 'fm', 'c']
+     *       ]
      * )
      */
     public function select(array $selectedFields, string $table, array $filterConditions, array $joinTables = [])
@@ -48,11 +51,12 @@ class DBManager
         );
         $joinString = implode(
             array_map(
-                function($joinTable, $alias) use($aliasTable){
+                function($params) use($aliasTable){
+                    [$joinTable, $alias] = $params;
+                    $aliasTable = count($params) > 2 ? $params[2] : $aliasTable;
                     $column = substr($joinTable, 0, -1);
                     return "JOIN {$joinTable} {$alias} ON {$aliasTable}.{$column}_id = {$alias}.id ";
                 },
-                array_keys($joinTables),
                 $joinTables
             )
         );
