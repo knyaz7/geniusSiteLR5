@@ -29,7 +29,7 @@ class DBManager
      *       ['email' => $email]
      * )
      */
-    public function select(array $selectedFields, string $table, array $filterConditions, string $joinTable = '')
+    public function select(array $selectedFields, string $table, array $filterConditions, array $joinTables = [])
     {
         $selectedFields = implode(', ', $selectedFields);
         $filterConditions = substr(
@@ -44,8 +44,15 @@ class DBManager
             ),
             0, -5
         );
-        $test = substr($joinTable, 0, -1);
-        $joinString = $joinTable ? "JOIN {$joinTable} ON {$table}.{$test}_id = {$joinTable}.id " : '';
+        $joinString = implode(
+            array_map(
+                function($table){
+                    $column = substr($table, 0, -1);
+                    return "JOIN {$table} ON {$table}.{$column}_id = {$table}.id ";
+                },
+                $joinTables
+            )
+        );
         $sql = "SELECT {$selectedFields} FROM {$table} {$joinString}WHERE {$filterConditions}";
         $result = $this->connection->query($sql);
         return $result;
