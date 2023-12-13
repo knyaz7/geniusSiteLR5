@@ -1,5 +1,6 @@
 <?php
-include "db/DBManager.php";
+include "../db/DBManager.php";
+include "../ConfigManager.php";
 session_start();
 
 if (!isset($_SESSION['user'])) {
@@ -16,14 +17,9 @@ echo '<div class="button-container">';
 echo '<a href="../' . $_SESSION['user']['accessright'] . '.php" class="btn"><=</a>';
 echo '</div>';
 
-
 // Подключение к базе данных
-$dbManager = new DBManager();
-$conn = $dbManager->dbConnect();
-
-if ($conn->connect_error) {
-    die("Ошибка подключения к базе данных: " . $conn->connect_error);
-}
+$configManager = new ConfigManager();
+$dbManager = new DBManager($configManager->getDBParam());
 
 // Функция для отображения сообщений об операциях
 function showMessage($message, $isError = false) {
@@ -32,9 +28,13 @@ function showMessage($message, $isError = false) {
 
 // Функция для получения дат контрактов
 function getContractDates($selectedId = null) {
-    global $conn;
-    $sql = "SELECT id, contract_date FROM contracts WHERE is_deleted = false";
-    $result = $conn->query($sql);
+    global $dbManager;
+
+    $result = $dbManager->select(
+        ['id', 'contract_date'],
+        'contracts',
+        ['is_deleted' => 'false']
+    );
 
     if ($result->num_rows > 0) {
         while ($row = $result->fetch_assoc()) {
@@ -46,9 +46,13 @@ function getContractDates($selectedId = null) {
 
 // Функция для получения модели мебели
 function getFurnitureModels($selectedId = null) {
-    global $conn;
-    $sql = "SELECT id, model_name FROM furniture_models WHERE is_deleted = false";
-    $result = $conn->query($sql);
+    global $dbManager;
+
+    $result = $dbManager->select(
+        ['id', 'model_name'],
+        'furniture_models',
+        ['is_deleted' => 'false']
+    );
 
     if ($result->num_rows > 0) {
         while ($row = $result->fetch_assoc()) {
@@ -64,29 +68,34 @@ if (isset($_POST['create'])) {
     $furniture_model_id = $_POST['furniture_model_id'];
     $quantity = $_POST['quantity'];
 
-    $sql = "INSERT INTO sales (contract_id, furniture_model_id, quantity) VALUES (?, ?, ?)";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("iii", $contract_id, $furniture_model_id, $quantity);
+    $result = $dbManager->insert(
+        'sales',
+        ['contract_id', 'furniture_model_id', 'quantity'],
+        [$contract_id, $furniture_model_id, $quantity]
+    );
 
-    if ($stmt->execute()) {
+    if ($result) {
         showMessage("Новая запись успешно добавлена.", false);
     } else {
-        showMessage("Ошибка при добавлении записи: " . $stmt->error, true);
+        showMessage("Ошибка при добавлении записи", true);
     }
 }
 
 // DELETE - Логическое удаление записи
 if (isset($_GET['delete'])) {
     $id = $_GET['delete'];
-    $sql = "UPDATE sales SET is_deleted = true WHERE id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $id);
 
-    if ($stmt->execute()) {
+    $result = $dbManager->update(
+        'sales',
+        ['is_deleted' => '1'],
+        ['id' => $id]
+    );
+
+    if ($result) {
         showMessage("Запись с ID $id успешно удалена (логическое удаление).", false);
         echo '<script>window.location.href = window.location.pathname;</script>';
     } else {
-        showMessage("Ошибка при логическом удалении записи: " . $stmt->error, true);
+        showMessage("Ошибка при логическом удалении записи", true);
     }
 }
 
@@ -98,26 +107,29 @@ if (isset($_POST['update'])) {
     $furniture_model_id = $_POST['furniture_model_id'];
     $quantity = $_POST['quantity'];
     
-    $sql = "UPDATE sales SET contract_id = ?, furniture_model_id = ?, quantity = ?, is_deleted = ? WHERE id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("iiiii", $contract_id, $furniture_model_id, $quantity, $is_deleted, $id);
+    $result = $dbManager->update(
+        'sales',
+        ['contract_id' => $contract_id, 'furniture_model_id' => $furniture_model_id, 'quantity' => $quantity, 'is_deleted' => $is_deleted],
+        ['id' => $id]
+    );
 
-    if ($stmt->execute()) {
+    if ($result) {
         showMessage("Запись с ID $id успешно обновлена.", false);
         echo '<script>window.location.href = window.location.pathname;</script>';
     } else {
-        showMessage("Ошибка при обновлении записи: " . $stmt->error, true);
+        showMessage("Ошибка при обновлении записи", true);
     }
 }
 
 // READ - Вывод данных из таблицы 
-$sql = "SELECT sales.id, contracts.contract_date, furniture_models.model_name, quantity
-        FROM sales
-        JOIN contracts ON sales.contract_id = contracts.id
-        JOIN furniture_models ON sales.furniture_model_id = furniture_models.id
-        WHERE sales.is_deleted = false";
-
-$result = $conn->query($sql);
+$result = $dbManager->select(
+    ['sales.id', 'contracts.contract_date', 'furniture_models.model_name', 'quantity'],
+    'sales',
+    ['sales.is_deleted' => 'false'],
+    [
+        ['contracts', 'contracts', 'sales'], ['furniture_models', 'furniture_models', 'sales']
+    ]
+);
 
 if ($result->num_rows > 0) {
     echo '<h2>Список продаж:</h2>';
@@ -151,11 +163,12 @@ echo '</form>';
 
 if (isset($_GET['edit'])) {
     $id = $_GET['edit'];
-    $sql = "SELECT * FROM sales WHERE id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $id);
-    $stmt->execute();
-    $result = $stmt->get_result();
+
+    $result = $dbManager->select(
+        ['*'],
+        'sales',
+        ['id' => $id]
+    );
 
     if ($result->num_rows == 1) {
         $row = $result->fetch_assoc();
@@ -178,7 +191,7 @@ if (isset($_GET['edit'])) {
 
 
 // Закрытие соединения с базой данных
-$conn->close();
+$dbManager->closeConnection();
 ?>
 
 <!DOCTYPE html>

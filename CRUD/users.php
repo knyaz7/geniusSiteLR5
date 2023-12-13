@@ -1,5 +1,6 @@
 <?php
-include "db/DBManager.php";
+include "../db/DBManager.php";
+include "../ConfigManager.php";
 session_start();
 
 if (!isset($_SESSION['user'])) {
@@ -17,12 +18,8 @@ echo '<a href="../' . $_SESSION['user']['accessright'] . '.php" class="btn"><=</
 echo '</div>';
 
 // Подключение к базе данных
-$dbManager = new DBManager();
-$conn = $dbManager->dbConnect();
-
-if ($conn->connect_error) {
-    die("Ошибка подключения к базе данных: " . $conn->connect_error);
-}
+$configManager = new ConfigManager();
+$dbManager = new DBManager($configManager->getDBParam());
 
 // Функция для отображения сообщений об операциях
 function showMessage($message, $isError = false) {
@@ -41,15 +38,18 @@ function echoUserTypes($userType = null) {
 // DELETE - Логическое удаление записи
 if (isset($_GET['delete'])) {
     $id = $_GET['delete'];
-    $sql = "UPDATE users SET is_deleted = true WHERE id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $id);
+ 
+    $result = $dbManager->update(
+        'users',
+        ['is_deleted' => '1'],
+        ['id' => $id]
+    );
 
-    if ($stmt->execute()) {
+    if ($result) {
         showMessage("Запись с ID $id успешно удалена (логическое удаление).", false);
         echo '<script>window.location.href = window.location.pathname;</script>';
     } else {
-        showMessage("Ошибка при логическом удалении записи: " . $stmt->error, true);
+        showMessage("Ошибка при логическом удалении записи", true);
     }
 }
 
@@ -60,22 +60,26 @@ if (isset($_POST['update'])) {
     $email = $_POST['email'];
     $accessright = $_POST['accessright'];
     
-    $sql = "UPDATE users SET email = ?, accessright = ?, is_deleted = ? WHERE id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ssii", $email, $accessright, $is_deleted, $id);
+    $result = $dbManager->update(
+        'users',
+        ['email' => $email, 'accessright' => $accessright, 'is_deleted' => $is_deleted],
+        ['id' => $id]
+    );
 
-    if ($stmt->execute()) {
+    if ($result) {
         showMessage("Запись с ID $id успешно обновлена.", false);
         echo '<script>window.location.href = window.location.pathname;</script>';
     } else {
-        showMessage("Ошибка при обновлении записи: " . $stmt->error, true);
+        showMessage("Ошибка при обновлении записи", true);
     }
 }
 
 // READ - Вывод данных из таблицы 
-$sql = "SELECT id, email, accessright FROM users WHERE is_deleted = false";
-
-$result = $conn->query($sql);
+$result = $dbManager->select(
+    ['id', 'email', 'accessright'],
+    'users',
+    ['is_deleted' => 'false'],
+);
 
 if ($result->num_rows > 0) {
     echo '<h2>Список пользователей:</h2>';
@@ -95,11 +99,12 @@ if ($result->num_rows > 0) {
 
 if (isset($_GET['edit'])) {
     $id = $_GET['edit'];
-    $sql = "SELECT * FROM users WHERE id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $id);
-    $stmt->execute();
-    $result = $stmt->get_result();
+
+    $result = $dbManager->select(
+        ['*'],
+        'users',
+        ['id' => $id]
+    );
 
     if ($result->num_rows == 1) {
         $row = $result->fetch_assoc();
@@ -119,7 +124,7 @@ if (isset($_GET['edit'])) {
 
 
 // Закрытие соединения с базой данных
-$conn->close();
+$dbManager->closeConnection();
 ?>
 
 <!DOCTYPE html>

@@ -1,5 +1,6 @@
 <?php
-include "db/DBManager.php";
+include "../db/DBManager.php";
+include "../ConfigManager.php";
 session_start();
 
 if (!isset($_SESSION['user'])) {
@@ -17,12 +18,8 @@ echo '<a href="../' . $_SESSION['user']['accessright'] . '.php" class="btn"><=</
 echo '</div>';
 
 // Подключение к базе данных
-$dbManager = new DBManager();
-$conn = $dbManager->dbConnect();
-
-if ($conn->connect_error) {
-    die("Ошибка подключения к базе данных: " . $conn->connect_error);
-}
+$configManager = new ConfigManager();
+$dbManager = new DBManager($configManager->getDBParam());
 
 // Функция для отображения сообщений об операциях
 function showMessage($message, $isError = false) {
@@ -31,9 +28,13 @@ function showMessage($message, $isError = false) {
 
 // Функция для получения имен клиентов
 function getCustomerNames($selectedId = null) {
-    global $conn;
-    $sql = "SELECT id, customer_name FROM customers WHERE is_deleted = false";
-    $result = $conn->query($sql);
+    global $dbManager;
+
+    $result = $dbManager->select(
+        ['id', 'customer_name'],
+        'customers',
+        ['is_deleted' => 'false']
+    );
 
     if ($result->num_rows > 0) {
         while ($row = $result->fetch_assoc()) {
@@ -51,29 +52,34 @@ if (isset($_POST['create'])) {
     $contract_date_str = $contract_date->format('Y-m-d H:i:s');
     $contract_completion_date_str = $contract_completion_date->format('Y-m-d H:i:s');
 
-    $sql = "INSERT INTO contracts (customer_id, contract_date, contract_completion_date) VALUES (?, ?, ?)";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("iss", $customer_id, $contract_date_str, $contract_completion_date_str);
+    $result = $dbManager->insert(
+        'contracts',
+        ['customer_id', 'contract_date', 'contract_completion_date'],
+        [$customer_id, $contract_date_str, $contract_completion_date_str]
+    );
 
-    if ($stmt->execute()) {
+    if ($result) {
         showMessage("Новая запись успешно добавлена.", false);
     } else {
-        showMessage("Ошибка при добавлении записи: " . $stmt->error, true);
+        showMessage("Ошибка при добавлении записи", true);
     }
 }
 
 // DELETE - Логическое удаление записи
 if (isset($_GET['delete'])) {
     $id = $_GET['delete'];
-    $sql = "UPDATE contracts SET is_deleted = true WHERE id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $id);
 
-    if ($stmt->execute()) {
+    $result = $dbManager->update(
+        'contracts',
+        ['is_deleted' => '1'],
+        ['id' => $id]
+    );
+
+    if ($result) {
         showMessage("Запись с ID $id успешно удалена (логическое удаление).", false);
         echo '<script>window.location.href = window.location.pathname;</script>';
     } else {
-        showMessage("Ошибка при логическом удалении записи: " . $stmt->error, true);
+        showMessage("Ошибка при логическом удалении записи", true);
     }
 }
 
@@ -87,25 +93,29 @@ if (isset($_POST['update'])) {
     $contract_date_str = $contract_date->format('Y-m-d H:i:s');
     $contract_completion_date_str = $contract_completion_date->format('Y-m-d H:i:s');
 
-    $sql = "UPDATE contracts SET customer_id = ?, contract_date = ?, contract_completion_date = ?, is_deleted = ? WHERE id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("issii", $customer_id, $contract_date_str, $contract_completion_date_str, $is_deleted, $id);
+    $result = $dbManager->update(
+        'contracts',
+        ['customer_id' => $customer_id, 'contract_date' => $contract_date_str, 'contract_completion_date' => $contract_completion_date_str, 'is_deleted' => $is_deleted],
+        ['id' => $id]
+    );
 
-    if ($stmt->execute()) {
+    if ($result) {
         showMessage("Запись с ID $id успешно обновлена.", false);
         echo '<script>window.location.href = window.location.pathname;</script>';
     } else {
-        showMessage("Ошибка при обновлении записи: " . $stmt->error, true);
+        showMessage("Ошибка при обновлении записи", true);
     }
 }
 
 // READ - Вывод данных из таблицы 
-$sql = "SELECT contracts.id, customers.customer_name, contract_date, contract_completion_date
-        FROM contracts
-        JOIN customers ON contracts.customer_id = customers.id
-        WHERE contracts.is_deleted = false";
-
-$result = $conn->query($sql);
+$result = $dbManager->select(
+    ['contracts.id', 'customers.customer_name', 'contract_date', 'contract_completion_date'],
+    'contracts',
+    ['contracts.is_deleted' => 'false'],
+    [
+        ['customers', 'customers', 'contracts']
+    ]
+);
 
 if ($result->num_rows > 0) {
     echo '<h2>Список договоров:</h2>';
@@ -138,11 +148,11 @@ echo '</form>';
 
 if (isset($_GET['edit'])) {
     $id = $_GET['edit'];
-    $sql = "SELECT * FROM contracts WHERE id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $id);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    $result = $dbManager->select(
+        ['*'],
+        'contracts',
+        ['id' => $id]
+    );
 
     if ($result->num_rows == 1) {
         $row = $result->fetch_assoc();
@@ -163,7 +173,7 @@ if (isset($_GET['edit'])) {
 
 
 // Закрытие соединения с базой данных
-$conn->close();
+$dbManager->closeConnection();
 ?>
 
 <!DOCTYPE html>

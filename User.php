@@ -1,12 +1,10 @@
 <?php
 include "AUser.php";
 
-class User extends AUser
-{
+class User extends AUser {
     protected $password, $email;
 
-    public function __construct($email = '', $password = '')
-    {
+    public function __construct($email = '', $password = '') {
         if (!($email && $password)) {
             throw new Exception("Ну как там с данными?", 423);
         }
@@ -14,34 +12,30 @@ class User extends AUser
         $this->password = $password;
     }   
 
-    public function __clone()
-    {
+    public function __clone() {
         $this->email = "Guest";
         $this->password = "qwerty";
     }
 
-    public function getPasswrord()
-    {
+    public function getPasswrord() {
         return $this->password;
     }
 
-    public function getEmail()
-    {
+    public function getEmail() {
         return $this->email;
     }
 
-    public function setPassword($password)
-    {
+    public function setPassword($password) {
         $this->password = $password;
     }
 
-    public function setEmail($email)
-    {
+    public function setEmail($email) {
         $this->email = $email;
     }
 
-    public function showInfo()
-    {
+    public function showInfo() {
         return "E-mail: {$this->email}\nПароль: {$this->password}";
     }
 }
+
+?>

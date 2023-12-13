@@ -1,5 +1,6 @@
 <?php
-include "db/DBManager.php";
+include "../db/DBManager.php";
+include "../ConfigManager.php";
 session_start();
 
 if (!isset($_SESSION['user'])) {
@@ -16,14 +17,9 @@ echo '<div class="button-container">';
 echo '<a href="../' . $_SESSION['user']['accessright'] . '.php" class="btn"><=</a>';
 echo '</div>';
 
-
 // Подключение к базе данных
-$dbManager = new DBManager();
-$conn = $dbManager->dbConnect();
-
-if ($conn->connect_error) {
-    die("Ошибка подключения к базе данных: " . $conn->connect_error);
-}
+$configManager = new ConfigManager();
+$dbManager = new DBManager($configManager->getDBParam());
 
 // Функция для отображения сообщений об операциях
 function showMessage($message, $isError = false) {
@@ -37,29 +33,34 @@ if (isset($_POST['create'])) {
     $model_characteristics = $_POST['model_characteristics'];
     $model_price = $_POST['model_price'];
 
-    $sql = "INSERT INTO furniture_models (furniture_name, model_name, model_characteristics, model_price) VALUES (?, ?, ?, ?)";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("sssi", $furniture_name, $model_name, $model_characteristics, $model_price);
+    $result = $dbManager->insert(
+        'furniture_models',
+        ['furniture_name', 'model_name', 'model_characteristics', 'model_price'],
+        [$furniture_name, $model_name, $model_characteristics, $model_price]
+    );
 
-    if ($stmt->execute()) {
+    if ($result) {
         showMessage("Новая запись успешно добавлена.", false);
     } else {
-        showMessage("Ошибка при добавлении записи: " . $stmt->error, true);
+        showMessage("Ошибка при добавлении записи", true);
     }
 }
 
 // DELETE - Логическое удаление записи
 if (isset($_GET['delete'])) {
     $id = $_GET['delete'];
-    $sql = "UPDATE furniture_models SET is_deleted = true WHERE id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $id);
 
-    if ($stmt->execute()) {
+    $result = $dbManager->update(
+        'furniture_models',
+        ['is_deleted' => '1'],
+        ['id' => $id]
+    );
+
+    if ($result) {
         showMessage("Запись с ID $id успешно удалена (логическое удаление).", false);
         echo '<script>window.location.href = window.location.pathname;</script>';
     } else {
-        showMessage("Ошибка при логическом удалении записи: " . $stmt->error, true);
+        showMessage("Ошибка при логическом удалении записи", true);
     }
 }
 
@@ -72,21 +73,26 @@ if (isset($_POST['update'])) {
     $model_characteristics = $_POST['model_characteristics'];
     $model_price = $_POST['model_price'];
 
-    $sql = "UPDATE furniture_models SET furniture_name = ?, model_name = ?, model_characteristics = ?, model_price = ?, is_deleted = ? WHERE id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("sssiii", $furniture_name, $model_name, $model_characteristics, $model_price, $is_deleted, $id);
+    $result = $dbManager->update(
+        'furniture_models',
+        ['furniture_name' => $furniture_name, 'model_name' => $model_name, 'model_characteristics' => $model_characteristics, 'model_price' => $model_price, 'is_deleted' => $is_deleted],
+        ['id' => $id]
+    );
 
-    if ($stmt->execute()) {
+    if ($result) {
         showMessage("Запись с ID $id успешно обновлена.", false);
         echo '<script>window.location.href = window.location.pathname;</script>';
     } else {
-        showMessage("Ошибка при обновлении записи: " . $stmt->error, true);
+        showMessage("Ошибка при обновлении записи", true);
     }
 }
 
 // READ - Вывод данных из таблицы 
-$sql = "SELECT * FROM furniture_models WHERE is_deleted = false";
-$result = $conn->query($sql);
+$result = $dbManager->select(
+    ['*'],
+    'furniture_models',
+    ['is_deleted' => '0'],
+);
 
 if ($result->num_rows > 0) {
     echo '<h2>Список моделей мебели:</h2>';
@@ -118,11 +124,11 @@ echo '</form>';
 
 if (isset($_GET['edit'])) {
     $id = $_GET['edit'];
-    $sql = "SELECT * FROM furniture_models WHERE id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $id);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    $result = $dbManager->select(
+        ['*'],
+        'furniture_models',
+        ['id' => $id]
+    );
 
     if ($result->num_rows == 1) {
         $row = $result->fetch_assoc();
@@ -142,7 +148,7 @@ if (isset($_GET['edit'])) {
 
 
 // Закрытие соединения с базой данных
-$conn->close();
+$dbManager->closeConnection();
 ?>
 
 <!DOCTYPE html>

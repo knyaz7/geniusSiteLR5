@@ -1,10 +1,8 @@
 <?php
-class DBManager
-{
+class DBManager {
     protected $connection;
 
-    public function __construct($dbParams)
-    {
+    public function __construct($dbParams) {
         $this->connection = new mysqli(
             $dbParams['servername'],
             $dbParams['username'],
@@ -33,8 +31,7 @@ class DBManager
      *       ]
      * )
      */
-    public function select(array $selectedFields, string $table, array $filterConditions, array $joinTables = [])
-    {
+    public function select(array $selectedFields, string $table, array $filterConditions, array $joinTables = []) {
         [$table, $aliasTable] = explode(' ', $table);
         $selectedFields = implode(', ', $selectedFields);
         $filterConditions = substr(
@@ -63,10 +60,6 @@ class DBManager
         $sql = "SELECT {$selectedFields} FROM {$table} {$aliasTable} {$joinString}WHERE {$filterConditions}";
         $result = $this->connection->query($sql);
         return $result;
-        // $query = $this->connection->prepare($queryString);
-        // $query->bind_param($this->determinateTypes(array_values($filterConditions)), $filterConditions);
-        // $query->execute();
-        // return $query->get_result();
     }
 
     /**
@@ -80,13 +73,12 @@ class DBManager
      *       ['id' => 4]
      * )
      */
-    public function update(string $table, array $updatingFields, array $filterConditions)
-    {
+    public function update(string $table, array $updatingFields, array $filterConditions) {
         $updatingFields = substr(
             implode(
                 array_map(
                     function($key, $value){
-                        return $key . '=' . $value . ', ';
+                        return $key . " = '" . $value . "', ";
                     },
                     array_keys($updatingFields),
                     $updatingFields
@@ -98,7 +90,7 @@ class DBManager
             implode(
                 array_map(
                     function($key, $value){
-                        return $key . '=' . $value . ' AND ';
+                        return $key . " = '" . $value . "' AND ";
                     },
                     array_keys($filterConditions),
                     $filterConditions
@@ -118,20 +110,12 @@ class DBManager
      *       ['lol@ya.ru', 1234, 'Борис']
      * )
      */
-    public function insert(string $table, array $insertingFields, array $values)
-    {
+    public function insert(string $table, array $insertingFields, array $values) {
         $insertingFields = implode(', ', $insertingFields);
         $values = implode("', '", $values);
         $query = "INSERT INTO {$table} ({$insertingFields}) VALUES ('{$values}')";
         return $this->connection->query($query);
     }
-
-    // protected function determinateTypes($fileds)
-    // {
-    //     $arrTypes = '';
-    //     foreach ($fileds as $field) {
-    //         $arrTypes .= gettype($field)[0];
-    //     }
-    //     return $arrTypes;
-    // }
 }
+
+?>
