@@ -3,6 +3,7 @@ include "db/DBManager.php";
 include "ConfigManager.php";
 include "SessionController.php";
 $session = new Session();
+$flash = new Flash($session);
 
 if (!$session->has('user')) {
     header("Location: index.php");
@@ -25,6 +26,8 @@ if (isset($_POST['logout'])) {
     header("Location: index.php");
     exit();
 }
+
+echo '<div class="flash-message">' . $flash->getMessage() . '</div>';
 ?>
 
 <!DOCTYPE html>

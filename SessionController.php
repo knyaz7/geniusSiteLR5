@@ -33,4 +33,27 @@ class Session {
     }
 }
 
+class Flash {
+    private $session;
+
+    public function __construct(Session $session) {
+        $this->session = $session;
+    }
+
+    public function setMessage($message) {
+        $this->session->set('flash_message', $message);
+    }
+
+    public function getMessage() {
+        $message = $this->session->get('flash_message');
+        
+        if ($message) {
+            // Очистим сообщение из сессии после получения
+            $this->session->delete('flash_message');
+            return $message;
+        }
+
+        return null;
+    }
+}
 ?>

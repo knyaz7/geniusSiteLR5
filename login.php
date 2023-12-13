@@ -2,7 +2,10 @@
 include "db/DBManager.php";
 include "ConfigManager.php";
 include "SessionController.php";
+
 $session = new Session();
+$flash = new Flash($session);
+
 // Подключение к базе данных 
 $configManager = new ConfigManager();
 $dbManager = new DBManager($configManager->getDBParam());
@@ -46,6 +49,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     setcookie('user_email', $row['email'], time() + 86400 * 30); // На месяц
                     setcookie('user_password', $row['password'], time() + 86400 * 30);
                 }
+                
+                $flash->setMessage("Вход прошел успешно.");
 
                 header("Location: {$row['accessright']}.php");
                 exit();
