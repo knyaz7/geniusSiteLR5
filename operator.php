@@ -1,5 +1,6 @@
 <?php
 include "db/DBManager.php";
+include "ConfigManager.php";
 session_start();
 
 if (!isset($_SESSION['user'])) {
@@ -122,16 +123,15 @@ if (isset($_POST['logout'])) {
         <select name="year" id="year">
             <?php
             // Подключение к базе данных
-            $dbManager = new DBManager();
-            $conn = $dbManager->dbConnect();
-
-            if ($conn->connect_error) {
-                die("Ошибка подключения: " . $conn->connect_error);
-            }
+            $configManager = new ConfigManager();
+            $dbManager = new DBManager($configManager->getDBParam());
 
             // Получение доступных годов из базы данных
-            $sql = "SELECT DISTINCT YEAR(contract_date) as year FROM contracts WHERE is_deleted = false";
-            $result = $conn->query($sql);
+            $result = $dbManager->select(
+                ['DISTINCT YEAR(contract_date) as year'],
+                'contracts',
+                ['is_deleted' => 'false']
+            );
 
             if ($result->num_rows > 0) {
                 while ($row = $result->fetch_assoc()) {
@@ -139,7 +139,7 @@ if (isset($_POST['logout'])) {
                 }
             }
 
-            $conn->close();
+            $dbManager->closeConnection();
             ?>
         </select>
         <input type="submit" value="Сгенерировать отчет">
