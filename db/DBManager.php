@@ -107,8 +107,8 @@ class DBManager
     public function insert(string $table, array $insertingFields, array $values)
     {
         $insertingFields = implode(', ', $insertingFields);
-        $values = implode(', ', $values);
-        $query = "INSERT INTO {$table} ({$insertingFields}) VALUES ({$values})";
+        $values = implode("', '", $values);
+        $query = "INSERT INTO {$table} ({$insertingFields}) VALUES ('{$values}')";
         return $this->connection->query($query);
     }
 
