@@ -3,11 +3,7 @@ include "db/DBManager.php";
 include "ConfigManager.php";
 // Подключение к базе данных 
 $configManager = new ConfigManager();
-$conn = new DBManager($configManager->getDBParam());
-
-if ($conn->connect_error) {
-    die("Ошибка подключения к базе данных: " . $conn->connect_error);
-}
+$dbManager = new DBManager($configManager->getDBParam());
 
 function validateEmail($email) {
     return filter_var($email, FILTER_VALIDATE_EMAIL);
@@ -23,11 +19,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'];
 
     // Проверяем, существует ли уже такой email в базе данных
-    $checkEmailQuery = "SELECT id FROM users WHERE email = ?";
-    $checkEmailStmt = $conn->prepare($checkEmailQuery);
-    $checkEmailStmt->bind_param("s", $email);
-    $checkEmailStmt->execute();
-    $checkEmailResult = $checkEmailStmt->get_result();
+    // $checkEmailQuery = "SELECT id FROM users WHERE email = ?";
+    // $checkEmailStmt = $conn->prepare($checkEmailQuery);
+    // $checkEmailStmt->bind_param("s", $email);
+    // $checkEmailStmt->execute();
+    // $checkEmailResult = $checkEmailStmt->get_result();
+    $checkEmailResult = $dbManager->select(
+        ['id'],
+        'users',
+        ['email' => $email]
+    );
 
     if ($checkEmailResult->num_rows > 0) {
         echo "Пользователь с таким email уже существует.";
@@ -39,23 +40,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $password = password_hash($password, PASSWORD_DEFAULT);
         $accessright = 'guest'; // Устанавливаем уровень "guest" для новых пользователей
 
-        $sql = "INSERT INTO users (email, password, accessright) VALUES (?, ?, ?)";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sss", $email, $password, $accessright);
+        // $sql = "INSERT INTO users (email, password, accessright) VALUES (?, ?, ?)";
+        // $stmt = $conn->prepare($sql);
+        // $stmt->bind_param("sss", $email, $password, $accessright);
+        $stmt = $dbManager->insert(
+            'users',
+            ['email', 'password', 'accessright'],
+            [$email, $password, $accessright]
+        );
 
-        if ($stmt->execute()) {
+        if ($stmt) {
             echo "Регистрация успешна. <a href='login.php'>Войти</a>";
         } else {
-            echo "Ошибка при регистрации: " . $stmt->error;
+            echo "Ошибка при регистрации: ";
         }
-
-        $stmt->close();
     }
-
-    $checkEmailStmt->close();
 }
 
-$conn->closeConnection();
+$dbManager->closeConnection();
 ?>
 
 <!DOCTYPE html>
