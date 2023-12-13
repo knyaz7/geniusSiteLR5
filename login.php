@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $email = $_POST['email'];
         $password = $_POST['password'];
         
-        // Проверка reCAPTCHA https://www.google.com/recaptcha/admin/site/686721336/setup
+        // Проверка reCAPTCHA https://www.google.com/recaptcha/admin/site/
         $recaptchaSecretKey = "6LdkuCspAAAAALOghDiJLE3-iwcEwpK2FuKItVGx"; 
         $recaptchaResponse = $_POST['g-recaptcha-response'];
         $recaptchaUrl = "https://www.google.com/recaptcha/api/siteverify?secret=$recaptchaSecretKey&response=$recaptchaResponse";
