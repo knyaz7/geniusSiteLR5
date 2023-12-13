@@ -1,20 +1,21 @@
 <?php
 include "../db/DBManager.php";
 include "../ConfigManager.php";
-session_start();
+include "../SessionController.php";
+$session = new Session();
 
-if (!isset($_SESSION['user'])) {
+if (!$session->has('user')) {
     header("Location: index.php");
     exit();
 }
 
-if ($_SESSION['user']['accessright'] != 'admin') {
-    header("Location: /index.php"); // Перенаправление на главную страницу, если уровень доступа не соответствует
+if ($session->get('user')['accessright'] != 'admin') {
+    header("Location: /index.php");
     exit();
 }
 
 echo '<div class="button-container">';
-echo '<a href="../' . $_SESSION['user']['accessright'] . '.php" class="btn"><=</a>';
+echo '<a href="../' . $session->get('user')['accessright'] . '.php" class="btn"><=</a>';
 echo '</div>';
 
 // Подключение к базе данных

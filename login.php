@@ -1,75 +1,67 @@
 <?php
 include "db/DBManager.php";
 include "ConfigManager.php";
+include "SessionController.php";
+$session = new Session();
 // Подключение к базе данных 
 $configManager = new ConfigManager();
 $dbManager = new DBManager($configManager->getDBParam());
 
-
+if ($session->has('user')) {
+    header("Location: {$session->get('user')['accessright']}.php");
+    exit();
+}
 // Обработка данных авторизации
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'];
     $password = $_POST['password'];
+    
+    // Проверка reCAPTCHA https://www.google.com/recaptcha/admin/site/
+    $recaptchaSecretKey = "6LdkuCspAAAAALOghDiJLE3-iwcEwpK2FuKItVGx"; 
+    $recaptchaResponse = $_POST['g-recaptcha-response'];
+    $recaptchaUrl = "https://www.google.com/recaptcha/api/siteverify?secret=$recaptchaSecretKey&response=$recaptchaResponse";
+    $recaptchaData = json_decode(file_get_contents($recaptchaUrl));
+    
+    if ($recaptchaData->success) {
+        // Проверяем, существует ли уже такой email в базе данных
+        $checkEmailResult = $dbManager->select(
+            ['id', 'email', 'password', 'accessright'],
+            'users',
+            ['email' => $email]
+        );
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $email = $_POST['email'];
-        $password = $_POST['password'];
-        
-        // Проверка reCAPTCHA https://www.google.com/recaptcha/admin/site/
-        $recaptchaSecretKey = "6LdkuCspAAAAALOghDiJLE3-iwcEwpK2FuKItVGx"; 
-        $recaptchaResponse = $_POST['g-recaptcha-response'];
-        $recaptchaUrl = "https://www.google.com/recaptcha/api/siteverify?secret=$recaptchaSecretKey&response=$recaptchaResponse";
-        $recaptchaData = json_decode(file_get_contents($recaptchaUrl));
-        
-        if ($recaptchaData->success) {
+        if ($checkEmailResult->num_rows > 0) {
+            $row = $checkEmailResult->fetch_assoc();
 
-            // Проверяем, существует ли уже такой email в базе данных
+            if (password_verify($password, $row['password'])) {
+                $session->set('user', [
+                    'id' => $row['id'],
+                    'email' => $row['email'],
+                    'accessright' => $row['accessright']
+                ]);
 
-            
-            // $checkEmailQuery = "SELECT id, email, password, accessright FROM users WHERE email = ?";
-            // $checkEmailStmt = $dbManager->prepare($checkEmailQuery);
-            // $checkEmailStmt->bind_param("s", $email);
-            // $checkEmailStmt->execute();
-
-            $checkEmailResult = $dbManager->select(
-                ['id', 'email', 'password', 'accessright'],
-                'users',
-                ['email' => $email]
-            );
-
-            if ($checkEmailResult->num_rows > 0) {
-                $row = $checkEmailResult->fetch_assoc();
-
-                if (password_verify($password, $row['password'])) {
-                    session_start();
-                    $_SESSION['user'] = [
-                        'id' => $row['id'],
-                        'email' => $row['email'],
-                        'accessright' => $row['accessright']
-                    ];
-
-                    // Проверяем, установлен ли флажок "Запомнить меня"
-                    if (isset($_POST['remember_me'])) {
-                        // Устанавливаем cookie для запоминания пользователя
-                        setcookie('user_email', $row['email'], time() + 86400 * 30); // На месяц
-                        setcookie('user_password', $row['password'], time() + 86400 * 30);
-                    }
-
-                    header("Location: {$row['accessright']}.php");
-                    exit();
-                } else {
-                    echo "Неверный пароль.";
+                // Проверяем, установлен ли флажок "Запомнить меня"
+                if (isset($_POST['remember_me'])) {
+                    // Устанавливаем cookie для запоминания пользователя
+                    setcookie('user_email', $row['email'], time() + 86400 * 30); // На месяц
+                    setcookie('user_password', $row['password'], time() + 86400 * 30);
                 }
-            } else {
-                echo "Пользователь с таким email не найден.";
-            }
 
-            // $checkEmailStmt->close();
+                header("Location: {$row['accessright']}.php");
+                exit();
+            } else {
+                echo "Неверный пароль.";
+            }
         } else {
-            echo "Пожалуйста, подтвердите, что вы не робот.";
+            echo "Пользователь с таким email не найден.";
         }
-    } 
-}
+
+        // $checkEmailStmt->close();
+    } else {
+        echo "Пожалуйста, подтвердите, что вы не робот.";
+    }
+} 
+
 
 $dbManager->closeConnection();
 ?>

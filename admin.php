@@ -1,22 +1,22 @@
 <?php
 include "db/DBManager.php";
 include "ConfigManager.php";
-session_start();
+include "SessionController.php";
+$session = new Session();
 
-if (!isset($_SESSION['user'])) {
+if (!$session->has('user')) {
     header("Location: index.php");
     exit();
 }
 
-if ($_SESSION['user']['accessright'] !== 'admin') {
-    header("Location: /index.php"); // Перенаправление на главную страницу, если уровень доступа не соответствует
+if ($session->get('user')['accessright'] !== 'admin') {
+    header("Location: /index.php");
     exit();
 }
 
 if (isset($_POST['logout'])) {
     // Удаление сессии
-    session_unset();
-    session_destroy();
+    $session->destroy();
 
     // Удаление cookie "user_email" и "user_password"
     setcookie('user_email', '', time() - 3600);
@@ -30,7 +30,7 @@ if (isset($_POST['logout'])) {
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Страница <?php echo $_SESSION['user']['accessright']; ?></title>
+    <title>Страница <?php echo $session->get('user')['accessright']; ?></title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -138,7 +138,7 @@ if (isset($_POST['logout'])) {
     <a class="btn" href="CRUD/sales.php">Управление таблицей sales</a>
     <h1>Управление пользователями</h1>
     <a class="btn" href="CRUD/users.php">Управление таблицей users</a>
-    <p>Выполнен вход: <b><?php echo $_SESSION['user']['accessright']; ?></b></p>
+    <p>Выполнен вход: <b><?php echo $session->get('user')['accessright']; ?></b></p>
     <form method="post">
         <input type="submit" name="logout" value="Выйти">
     </form>

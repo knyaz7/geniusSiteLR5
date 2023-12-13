@@ -1,38 +1,37 @@
 <?php
 include "db/DBManager.php";
 include "ConfigManager.php";
-session_start();
+include "SessionController.php";
+$session = new Session();
 
-if (!isset($_SESSION['user'])) {
+if (!$session->has('user')) {
     header("Location: index.php");
     exit();
 }
 
-if ($_SESSION['user']['accessright'] == 'guest') {
+if ($session->get('user')['accessright'] == 'guest') {
     header("Location: /index.php");
     exit();
 }
 
 // Проверяем, был ли пользователь на странице ранее
-if (!isset($_SESSION['operator_visited'])) {
-    $_SESSION['operator_visited'] = 1;
-    $_SESSION['last_visit_time'] = date("Y-m-d H:i:s");
+if (!$session->has('operator_visited')) {
+    $session->set('operator_visited', 1);
+    $session->set('last_visit_time', date("Y-m-d H:i:s"));
     echo "Добро пожаловать!";
 } else {
-    $_SESSION['operator_visited']++;
-    $lastVisitTime = $_SESSION['last_visit_time'];
-    echo "Вы зашли в {$_SESSION['operator_visited']} раз<br>Последнее посещение: $lastVisitTime";
+    $session->set('operator_visited', $session->get('operator_visited') + 1);
+    $lastVisitTime = $session->get('last_visit_time');
+    echo "Вы зашли в {$session->get('operator_visited')} раз<br>Последнее посещение: $lastVisitTime";
 }
 
-
 // Обновляем время последнего посещения
-$_SESSION['last_visit_time'] = date('Y-m-d H:i:s');
+$session->set('last_visit_time', date('Y-m-d H:i:s'));
 
 
 if (isset($_POST['logout'])) {
     // Удаление сессии
-    session_unset();
-    session_destroy();
+    $session->destroy();
 
     // Удаление cookie "user_email" и "user_password"
     setcookie('user_email', '', time() - 3600);
@@ -46,7 +45,7 @@ if (isset($_POST['logout'])) {
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Страница <?php echo $_SESSION['user']['accessright']; ?></title>
+    <title>Страница <?php echo $session->get('user')['accessright']; ?></title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -145,7 +144,7 @@ if (isset($_POST['logout'])) {
         <input type="submit" value="Сгенерировать отчет">
     </form>
     </div>
-    <p>Выполнен вход: <b><?php echo $_SESSION['user']['accessright']; ?></b></p>
+    <p>Выполнен вход: <b><?php echo $session->get('user')['accessright']; ?></b></p>
     <form method="post">
         <input type="submit" name="logout" value="Выйти">
     </form>

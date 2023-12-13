@@ -1,15 +1,16 @@
 <?php
 include "../db/DBManager.php";
 include "../ConfigManager.php";
-session_start();
+include "../SessionController.php";
+$session = new Session();
 
-if (!isset($_SESSION['user'])) {
+if (!$session->has('user')) {
     header("Location: index.php");
     exit();
 }
 
-if ($_SESSION['user']['accessright'] == 'guest') {
-    header("Location: /index.php"); // Перенаправление на главную страницу, если уровень доступа не соответствует
+if ($session->get('user')['accessright'] == 'guest') {
+    header("Location: /index.php");
     exit();
 }
 
@@ -185,6 +186,6 @@ if (isset($_POST['year'])) {
     </style>
 </head>
 <body>
-    <a class="return-button" href="../<?php echo $_SESSION['user']['accessright']; ?>.php">Вернуться на главную</a>
+    <a class="return-button" href="../<?php echo $session->get('user')['accessright']; ?>.php">Вернуться на главную</a>
 </body>
 </html>

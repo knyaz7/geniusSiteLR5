@@ -75,11 +75,12 @@
     <?php
     include "db/DBManager.php";
     include "ConfigManager.php";
-    session_start();
+    include "SessionController.php";
+    $session = new Session();
 
-    if (isset($_SESSION['user'])) {
+    if ($session->has('user')) {
         // Пользователь авторизован, перенаправляем его на соответствующую страницу
-        header("Location: {$_SESSION['user']['accessright']}.php");
+        header("Location: {$session->get('user')['accessright']}.php");
         exit();
     }
 
@@ -99,23 +100,17 @@
                 'email' => $email
             ]
         );
-        // $checkEmailQuery = "SELECT id, email, password, accessright FROM users WHERE email = ?";
-        // $checkEmailStmt = $conn->prepare($checkEmailQuery);
-        // $checkEmailStmt->bind_param("s", $email);
-        // $checkEmailStmt->execute();
-        // $checkEmailResult = $checkEmailStmt->get_result();
     
         if ($checkEmailResult->num_rows > 0) {
             $row = $checkEmailResult->fetch_assoc();
     
             if ($password === $row['password']) {
-                session_start();
-                $_SESSION['user'] = [
+                $session->set('user', [
                     'id' => $row['id'],
                     'email' => $row['email'],
                     'accessright' => $row['accessright']
-                ];
-    
+                ]);
+
                 // Перенаправляем пользователя на соответствующую страницу
                 header("Location: {$row['accessright']}.php");
                 exit();

@@ -1,15 +1,15 @@
 <?php
-session_start();
+include "SessionController.php";
+$session = new Session();
 
-if (!isset($_SESSION['user'])) {
+if (!$session->has('user')) {
     header("Location: index.php");
     exit();
 }
 
 if (isset($_POST['logout'])) {
     // Удаление сессии
-    session_unset();
-    session_destroy();
+    $session->destroy();
 
     // Удаление cookie "user_email" и "user_password"
     setcookie('user_email', '', time() - 3600);
@@ -23,7 +23,7 @@ if (isset($_POST['logout'])) {
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Страница <?php echo $_SESSION['user']['accessright']; ?></title>
+    <title>Страница <?php echo $session->get('user')['accessright']; ?></title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -79,7 +79,7 @@ if (isset($_POST['logout'])) {
 <body>
     <h1>База данных "Мебель"</h1>
     <p>Разработчик - Владимир Наумов</p>
-    <p>Выполнен вход: <b><?php echo $_SESSION['user']['accessright']; ?></b></p>
+    <p>Выполнен вход: <b><?php echo $session->get('user')['accessright']; ?></b></p>
     <p>Администратор скоро рассмотрит вашу заявку, ожидайте.</p>
     <form method="post">
         <input type="submit" name="logout" value="Выйти">
