@@ -1,5 +1,6 @@
 <?php
 include "db/DBManager.php";
+include "ConfigManager.php";
 session_start();
 
 if (!isset($_SESSION['user'])) {
@@ -17,12 +18,8 @@ if (isset($_POST['year'])) {
     $selectedYearDisplay = htmlspecialchars($selectedYear);
 
     // Подключение к базе данных
-    $dbManager = new DBManager();
-    $conn = $dbManager->dbConnect();
-
-    if ($conn->connect_error) {
-        die("Ошибка подключения: " . $conn->connect_error);
-    }
+    $configManager = new ConfigManager();
+    $dbManager = new DBManager($configManager->getDBParam());
 
     // SQL-запрос для получения данных
     $sql = "SELECT fm.furniture_name, fm.model_name, s.quantity, fm.model_price,
